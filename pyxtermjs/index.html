@@ -1,0 +1,65 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>pyxterm.js</title>
+  <style>
+  html {
+    font-family: arial;
+  }
+  </style>
+</head>
+<body>
+
+<span style="font-size: 1.4em;">pyxterm.js</span>&nbsp;&nbsp;&nbsp;
+<span style="font-size: small;">status: <span style="font-size: small;" id="status">connecting...</span></span>
+
+<div id="terminal"></div>
+<p style="text-align: right; font-size: small;">
+  built by <a href="https://grassfedcode.com">Chad Smith</a> <a href="https://github.com/cs01">GitHub</a>
+</p>
+<!-- xterm -->
+<script src="https://unpkg.com/xterm@3.6.0/dist/xterm.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/xterm@3.6.0/dist/xterm.css" />
+
+<!-- optional xterm add ons -->
+<!-- <script src="https://unpkg.com/xterm@3.6.0/dist/addons/fit/fit.js"></script>
+<script src="https://unpkg.com/xterm@3.6.0/dist/addons/fullscreen/fullscreen.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/xterm@3.6.0/dist/addons/fullscreen/fullscreen.css" /> -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+
+<script>
+  // Terminal.applyAddon(fullscreen)
+  // Terminal.applyAddon(fit)
+  const term = new Terminal();
+  term.open(document.getElementById('terminal'));
+
+  // term.toggleFullScreen(true)
+  // term.fit()
+
+  term.on('key', (key, ev) => {
+    console.log("pressed key", key)
+    console.log("event", ev)
+    socket.emit("pty-input", {"input": key})
+  });
+
+  const socket = io.connect('/pty');
+  const status = document.getElementById("status")
+
+  socket.on("pty-output", function(data){
+    console.log("new output", data)
+    term.write(data.output)
+  })
+
+  socket.on("connect", () => {
+    status.innerHTML = '<span style="background-color: lightgreen;">connected</span>'
+    }
+  )
+
+  socket.on("disconnect", () => {
+    status.innerHTML = '<span style="background-color: #ff8383;">disconnected</span>'
+  })
+
+</script>
+</body>
+</html>

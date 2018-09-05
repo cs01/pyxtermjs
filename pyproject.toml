@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "pyxtermjs"
+
+authors = ["Chad Smith <cs01@users.noreply.github.com>"]
+description = "interactive terminal in the browser"
+homepage = "https://github.com/cs01/pyxterm.js"
+keywords = ['xterm', 'javascript', 'terminal-emulators', 'browser', 'tty', 'pty', 'console', 'terminal']
+license = "MIT"
+readme = 'README.md'
+repository = "https://github.com/cs01/pyxterm.js"
+version = "0.1.0"
+
+
+[tool.poetry.dependencies]
+python = "^3.6"
+flask-socketio = "^3.0"
+
+[tool.poetry.scripts]
+pyxtermjs = "pyxtermjs.app:main"
