@@ -4,11 +4,11 @@ name = "pyxtermjs"
 authors = ["Chad Smith <cs01@users.noreply.github.com>"]
 description = "interactive terminal in the browser"
 homepage = "https://github.com/cs01/pyxterm.js"
-keywords = ['xterm', 'javascript', 'terminal-emulators', 'browser', 'tty', 'pty', 'console', 'terminal']
+keywords = ['xterm', 'xterm.js', 'javascript', 'terminal-emulators', 'browser', 'tty', 'pty', 'console', 'terminal']
 license = "MIT"
 readme = 'README.md'
 repository = "https://github.com/cs01/pyxterm.js"
-version = "0.2.0"
+version = "0.3.0.0"
 
 
 [tool.poetry.dependencies]
