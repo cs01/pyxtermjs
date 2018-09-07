@@ -13,7 +13,8 @@
 <span style="font-size: 1.4em;">pyxterm.js</span>&nbsp;&nbsp;&nbsp;
 <span style="font-size: small;">status: <span style="font-size: small;" id="status">connecting...</span></span>
 
-<div id="terminal"></div>
+<div style="width: 100%; height: calc(100% - 50px);" id="terminal"></div>
+
 <p style="text-align: right; font-size: small;">
   built by <a href="https://grassfedcode.com">Chad Smith</a> <a href="https://github.com/cs01">GitHub</a>
 </p>
@@ -22,20 +23,22 @@
 <link rel="stylesheet" href="https://unpkg.com/xterm@3.6.0/dist/xterm.css" />
 
 <!-- optional xterm add ons -->
-<!-- <script src="https://unpkg.com/xterm@3.6.0/dist/addons/fit/fit.js"></script>
+<script src="https://unpkg.com/xterm@3.6.0/dist/addons/fit/fit.js"></script>
 <script src="https://unpkg.com/xterm@3.6.0/dist/addons/fullscreen/fullscreen.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/xterm@3.6.0/dist/addons/fullscreen/fullscreen.css" /> -->
+<link rel="stylesheet" href="https://unpkg.com/xterm@3.6.0/dist/addons/fullscreen/fullscreen.css" />
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
 
 <script>
   // Terminal.applyAddon(fullscreen)
-  // Terminal.applyAddon(fit)
+  Terminal.applyAddon(fit)
   const term = new Terminal();
   term.open(document.getElementById('terminal'));
-
+  term.fit()
+  term.resize(15, 50)
+  console.log(`size: ${term.cols} columns, ${term.rows} rows`)
   // term.toggleFullScreen(true)
-  // term.fit()
+  term.fit()
 
   term.on('key', (key, ev) => {
     console.log("pressed key", key)
@@ -59,6 +62,16 @@
   socket.on("disconnect", () => {
     status.innerHTML = '<span style="background-color: #ff8383;">disconnected</span>'
   })
+
+  function resize(){
+    term.fit()
+    socket.emit("resize", {"cols": term.cols, "rows": term.rows})
+    console.log("resigin",  {"cols": term.cols, "rows": term.rows})
+  }
+
+  window.onresize = function(e){
+      resize()
+  }
 
 </script>
 </body>

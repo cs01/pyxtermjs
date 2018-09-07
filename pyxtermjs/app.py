@@ -7,11 +7,21 @@ import os
 import subprocess
 import select
 
-app = Flask(__name__, template_folder=".", static_folder=".", static_url_path="")
+import termios
+import struct
+import fcntl
+
+app = Flask(
+    __name__, template_folder=".", static_folder=".", static_url_path="")
 app.config["SECRET_KEY"] = "secret!"
 app.config["fd"] = None
 app.config["child_pid"] = None
 socketio = SocketIO(app)
+
+
+def set_winsize(fd, row, col, xpix=0, ypix=0):
+    winsize = struct.pack("HHHH", row, col, xpix, ypix)
+    fcntl.ioctl(fd, termios.TIOCSWINSZ, winsize)
 
 
 def read_and_forward_pty_output():
@@ -20,10 +30,12 @@ def read_and_forward_pty_output():
         socketio.sleep(0.01)
         if app.config["fd"]:
             timeout_sec = 0
-            (data_ready, _, _) = select.select([app.config["fd"]], [], [], timeout_sec)
+            (data_ready, _, _) = select.select([app.config["fd"]], [], [],
+                                               timeout_sec)
             if data_ready:
                 output = os.read(app.config["fd"], max_read_bytes).decode()
-                socketio.emit("pty-output", {"output": output}, namespace="/pty")
+                socketio.emit(
+                    "pty-output", {"output": output}, namespace="/pty")
 
 
 @app.route("/")
@@ -35,7 +47,14 @@ def index():
 def pty_input(data):
     """write to the child pty"""
     if app.config["fd"]:
+        # print("writing to ptd: %s" % data["input"])
         os.write(app.config["fd"], data["input"].encode())
+
+
+@socketio.on("resize", namespace="/pty")
+def resize(data):
+    if app.config["fd"]:
+        set_winsize(app.config["fd"], data["rows"], data["cols"])
 
 
 @socketio.on("connect", namespace="/pty")
@@ -58,11 +77,10 @@ def connect():
         # store child fd and pid
         app.config["fd"] = fd
         app.config["child_pid"] = child_pid
+        set_winsize(fd, 43, 95)
         print("child pid is", child_pid)
-        print(
-            "starting background task to continously read and forward pty "
-            "output to client"
-        )
+        print("starting background task to continously read and forward pty "
+              "output to client")
         socketio.start_background_task(target=read_and_forward_pty_output)
         print("task started")
 
