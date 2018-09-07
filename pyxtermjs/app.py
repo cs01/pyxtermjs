@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 import pty
@@ -6,8 +7,7 @@ import os
 import subprocess
 import select
 
-app = Flask(
-    __name__, template_folder=".", static_folder=".", static_url_path="")
+app = Flask(__name__, template_folder=".", static_folder=".", static_url_path="")
 app.config["SECRET_KEY"] = "secret!"
 app.config["fd"] = None
 app.config["child_pid"] = None
@@ -20,12 +20,10 @@ def read_and_forward_pty_output():
         socketio.sleep(0.01)
         if app.config["fd"]:
             timeout_sec = 0
-            (data_ready, _, _) = select.select([app.config["fd"]], [], [],
-                                               timeout_sec)
+            (data_ready, _, _) = select.select([app.config["fd"]], [], [], timeout_sec)
             if data_ready:
                 output = os.read(app.config["fd"], max_read_bytes).decode()
-                socketio.emit(
-                    "pty-output", {"output": output}, namespace="/pty")
+                socketio.emit("pty-output", {"output": output}, namespace="/pty")
 
 
 @app.route("/")
@@ -61,16 +59,22 @@ def connect():
         app.config["fd"] = fd
         app.config["child_pid"] = child_pid
         print("child pid is", child_pid)
-        print("starting background task to continously read and forward pty "
-              "output to client")
+        print(
+            "starting background task to continously read and forward pty "
+            "output to client"
+        )
         socketio.start_background_task(target=read_and_forward_pty_output)
         print("task started")
 
 
-def main(debug=False, port=5000):
-    print(f"serving on http://127.0.0.1:{port}")
-    socketio.run(app, debug=debug, port=port)
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--port", default=5000)
+    parser.add_argument("--debug", action="store_true")
+    args = parser.parse_args()
+    print(f"serving on http://127.0.0.1:{args.port}")
+    socketio.run(app, debug=args.debug, port=args.port)
 
 
 if __name__ == "__main__":
-    main(debug=True)
+    main()
