@@ -16,16 +16,16 @@ It is a
 ## Installation
 
 ### Option 1
-This option installs system-wide or to your virtual environment. Should probably only be used if you're using a virtual environment.
+Run pyxtermjs with no commitment in an ephemeral environment with [pipx](https://github.com/cs01/pipx)
 ```
-pip install pyxtermjs
+pipx pyxtermjs
 pyxtermjs  # run it from anywhere
 ```
 
 ### Option 2
-This option installs system-wide and isolates all of pyxterm.js's dependencies, guaranteeing there are no dependency version conflicts. Requires [pipsi](https://github.com/mitsuhiko/pipsi) to be installed.
+This option installs system-wide and isolates all of pyxterm.js's dependencies, guaranteeing there are no dependency version conflicts. Requires [pipx](https://github.com/cs01/pipx)to be installed.
 ```
-pipsi install pyxtermjs
+pipx install pyxtermjs
 pyxtermjs  # run it from anywhere
 ```
 
@@ -35,7 +35,7 @@ This option lets you play around with the source code. Requires [poetry](https:/
 git clone https://github.com/cs01/pyxterm.js.git
 cd pyxterm.js
 poetry install
-python pyxtermjs/app.py
+poetry run pyxtermjs
 ```
 
 ## Documentation
