@@ -7,6 +7,7 @@
     font-family: arial;
   }
   </style>
+  <link rel="stylesheet" href="https://unpkg.com/xterm@3.6.0/dist/xterm.css" />
 </head>
 <body>
 
@@ -21,19 +22,28 @@
 <!-- xterm -->
 <script src="https://unpkg.com/xterm@3.6.0/dist/xterm.js"></script>
 <script src="https://unpkg.com/xterm@3.6.0/dist/addons/fit/fit.js"></script>
+<script src="https://unpkg.com/xterm@3.6.0/dist/addons/webLinks/webLinks.js"></script>
+<script src="https://unpkg.com/xterm@3.6.0/dist/addons/fullscreen/fullscreen.js"></script>
+<script src="https://unpkg.com/xterm@3.6.0/dist/addons/search/search.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
 
 <script>
-  // Terminal.applyAddon(fullscreen)
+  Terminal.applyAddon(fullscreen)
   Terminal.applyAddon(fit)
-  const term = new Terminal();
+  Terminal.applyAddon(webLinks)
+  Terminal.applyAddon(search)
+  const term = new Terminal({
+        cursorBlink: true,
+        macOptionIsMeta: true,
+        scrollback: true,
+    });
   term.open(document.getElementById('terminal'));
   term.fit()
   term.resize(15, 50)
   console.log(`size: ${term.cols} columns, ${term.rows} rows`)
   // term.toggleFullScreen(true)
   term.fit()
-
+  term.write("Welcome to pyxterm.js!\nhttps://github.com/cs01/pyxterm.js\n")
   term.on('key', (key, ev) => {
     console.log("pressed key", key)
     console.log("event", ev)
@@ -49,6 +59,7 @@
   })
 
   socket.on("connect", () => {
+    fitToscreen()
     status.innerHTML = '<span style="background-color: lightgreen;">connected</span>'
     }
   )
@@ -76,6 +87,6 @@
 
 
 </script>
-<link rel="stylesheet" href="https://unpkg.com/xterm@3.6.0/dist/xterm.css" />
+
 </body>
 </html>
