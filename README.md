@@ -18,8 +18,7 @@ It is a
 ### Option 1
 Run pyxtermjs with no commitment in an ephemeral environment with [pipx](https://github.com/cs01/pipx)
 ```
-pipx pyxtermjs
-pyxtermjs  # run it from anywhere
+pipx pyxtermjs  # install and run in ephemeral environment
 ```
 
 ### Option 2
