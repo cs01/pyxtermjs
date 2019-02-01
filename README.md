@@ -3,11 +3,24 @@ A fully functional terminal in your browser.
 
 ![screenshot](https://github.com/cs01/pyxterm.js/raw/master/pyxtermjs.gif)
 
-This is a Flask websocket backend combined with the Xterm.js Javascript terminal emulator in the frontend. It works out of the box and can run any application you want, including `bash`.
+## How does this work?
 
-While useful on its own, the real purpose of this is to show a basic proof of concept on how to bring Xterm.js, Python, Flask, and Websockets together to make a useful tool.
+On the backend:
+* A [Flask](http://flask.pocoo.org/) server is running
+* The Flask server uses [flask-socketio](https://flask-socketio.readthedocs.io/en/latest/), a websocket library for Flask and socketio
+* A [pty](https://docs.python.org/3/library/pty.html) ("pseudo-terminal") is spawned that runs bash.
+  * You can think of a pty as a way to serialize/deserialize a terminal session. The Python docs describe it as "starting another process and being able to write to and read from its controlling terminal programmatically".
 
-It is a
+On the frontend:
+* [Xterm.js](https://xtermjs.org/) is used to render [Xterm](https://en.wikipedia.org/wiki/Xterm) output data in the browser.
+  * This means [escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code) used by terminals to control the cursor location, color, and other options can be passed directly to Xterm.js and Xterm.js will faithfully render them as a terminal would.
+  * Output from the pty process on the backend is fed into it.
+
+
+## Why?
+The real purpose of this is to show a basic proof of concept on how to bring Xterm.js, Python, Flask, and Websockets together to run a pty in the browser.
+
+This is a
 * starting point to build your own web app with a terminal
 * learning tool to understand what a `pty` is, and how to use one in Python
 * way to see Flask and Flask-SocketIO in action
@@ -16,13 +29,13 @@ It is a
 ## Installation
 
 ### Option 1
-Run pyxtermjs with no commitment in an ephemeral environment with [pipx](https://github.com/cs01/pipx)
+Run pyxtermjs with no commitment in an ephemeral environment with [pipx](https://github.com/pipxproject/pip-app)
 ```
-pipx pyxtermjs  # install and run in ephemeral environment
+pipx run pyxtermjs  # install and run in ephemeral environment
 ```
 
 ### Option 2
-This option installs system-wide and isolates all of pyxterm.js's dependencies, guaranteeing there are no dependency version conflicts. Requires [pipx](https://github.com/cs01/pipx)to be installed.
+This option installs system-wide and isolates all of pyxterm.js's dependencies, guaranteeing there are no dependency version conflicts. Requires [pipx](https:/github.com/pipxproject/pip-app)to be installed.
 ```
 pipx install pyxtermjs
 pyxtermjs  # run it from anywhere
