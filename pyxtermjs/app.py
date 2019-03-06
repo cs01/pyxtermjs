@@ -12,7 +12,7 @@ import fcntl
 import shlex
 
 
-__version__ = "0.4.0.0"
+__version__ = "0.4.0.1"
 
 app = Flask(__name__, template_folder=".", static_folder=".", static_url_path="")
 app.config["SECRET_KEY"] = "secret!"
