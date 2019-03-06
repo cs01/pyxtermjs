@@ -11,6 +11,9 @@ import struct
 import fcntl
 import shlex
 
+
+__version__ = "0.4.0.0"
+
 app = Flask(__name__, template_folder=".", static_folder=".", static_url_path="")
 app.config["SECRET_KEY"] = "secret!"
 app.config["fd"] = None
@@ -97,6 +100,7 @@ def main():
     )
     parser.add_argument("-p", "--port", default=5000, help="port to run server on")
     parser.add_argument("--debug", action="store_true", help="debug the server")
+    parser.add_argument("--version", action="store_true", help="print version and exit")
     parser.add_argument(
         "--command", default="bash", help="Command to run in the terminal"
     )
@@ -106,6 +110,9 @@ def main():
         help="arguments to pass to command (i.e. --cmd-args='arg1 arg2 --flag')",
     )
     args = parser.parse_args()
+    if args.version:
+        print(__version__)
+        exit(0)
     print(f"serving on http://127.0.0.1:{args.port}")
     app.config["cmd"] = [args.command] + shlex.split(args.cmd_args)
     socketio.run(app, debug=args.debug, port=args.port)
