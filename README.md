@@ -29,17 +29,12 @@ This is a
 
 ## Installation
 
-### Option 1
-Run pyxtermjs with no commitment in an ephemeral environment with [pipx](https://github.com/pipxproject/pip-app)
-```
-pipx run pyxtermjs  # install and run in ephemeral environment
-```
+Clone this repository, enter the `pyxtermjs` directory, then run:
 
-### Option 2
-Clone this repository, enter the `pyxtermjs` directory, create a virtual environment (`python3 -m venv venv`), activate it (`source venv/bin/activate`) then run
 ```
-pip install -r requirements.txt
-python -m pyxtermjs
+python3 -m venv venv  # must be python3.6+
+venv/bin/pip install -r requirements.txt
+venv/bin/python -m pyxtermjs
 ```
 
 ## Documentation
