@@ -28,6 +28,10 @@ def set_winsize(fd, row, col, xpix=0, ypix=0):
 
 def read_and_forward_pty_output():
     max_read_bytes = 1024 * 20
+    #print("31: app.config['fd']: {}".format(app.config['fd']))
+    #import traceback
+    #traceback.printstack()
+
     while True:
         socketio.sleep(0.01)
         if app.config["fd"]:
@@ -36,17 +40,30 @@ def read_and_forward_pty_output():
             if data_ready:
                 output = os.read(app.config["fd"], max_read_bytes).decode()
                 socketio.emit("pty-output", {"output": output}, namespace="/pty")
+                #try:
+                #    output = os.read(app.config["fd"], max_read_bytes).decode()
+                #    socketio.emit("pty-output", {"output": output}, namespace="/pty")
+                #except Exception as e:
+                #    print("40: Exception, e: {}".format(e))
+                #    pass
+
+                #read_bytes = os.read(app.config["fd"], max_read_bytes)
+                #if read_bytes:
+                #   output = read_bytes.decode()
+                #   socketio.emit("pty-output", {"output": output}, namespace="/pty")
+                #else:
+                #    print("42: End-of-file reached")
 
 
 @app.route("/")
 def index():
     print("43: code here")
     from flask import request
-    hostid = request.args.get('hostid', None)
+    hostid = request.args.get('host', None)
     sessionid = request.args.get('sessionid', None)
     print("45: hostid: {}".format(hostid))
     print("45: sessionid: {}".format(sessionid))
-    print("47: app.config: {}".format(app.config))
+    #print("47: app.config: {}".format(app.config))
     app.config['hostid'] = hostid
     app.config['sessionid'] = sessionid
     return render_template("index.html")
@@ -67,15 +84,20 @@ def resize(data):
     if app.config["fd"]:
         set_winsize(app.config["fd"], data["rows"], data["cols"])
 
+@socketio.on("disconnect", namespace="/pty")
+def disconnect():
+    """new client disconnected"""
+    print("90: client disconnected")
+    print("90: app.config[fd]: {}".format(app.config["fd"]))
 
 @socketio.on("connect", namespace="/pty")
 def connect():
     """new client connected"""
 
-    print("70: code here")
+    #print("70: code here")
     #print("71: app.config: {}".format(app.config))
-    print("71: sessionid: {}".format(app.config['sessionid']))
-    print("71: hostid: {}".format(app.config['hostid']))
+    #print("71: sessionid: {}".format(app.config['sessionid']))
+    #print("71: hostid: {}".format(app.config['hostid']))
 
     if app.config["child_pid"]:
         # already started child process, don't start another
@@ -88,17 +110,24 @@ def connect():
         # anything printed here will show up in the pty, including the output
         # of this subprocess
         cmd = " ".join(shlex.quote(c) for c in app.config["cmd"])
-        print("90: cmd: {}".format(cmd))
-        print("92: app.config['cmd']: {}".format(app.config['cmd']))
+        #print("90: cmd: {}".format(cmd))
+        #print("92: app.config['cmd']: {}".format(app.config['cmd']))
+        #print("93: app.config['sessionid']: {}".format(app.config['sessionid']))
+        #print("94: app.config['hostid']: {}".format(app.config['hostid']))
         #cmd = "tlog-play -r es --es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search --es-query='session:3'"
         #cmd = 'tlog-play -r es --es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search --es-query=session:3'
-        cmd = ['tlog-play', '-r', 'es', '--es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search', '--es-query=session:3']
+        search_string = '--es-query=' + 'host:' + app.config.get('hostid', ' ') + ' AND ' + 'session:' + app.config.get('sessionid', ' ')
+        #print("94: search_string: {}".format(search_string))
+      
+        #cmd = ['tlog-play', '-r', 'es', '--es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search', '--es-query=session:3']
+        cmd = ['tlog-play', '-r', 'es', '--es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search', search_string]
         print("93: cmd: {}".format(cmd))
         #subprocess.run(app.config["cmd"])
         subprocess.run(cmd)
     else:
         # this is the parent process fork.
         # store child fd and pid
+        print("130: fd: {}".format(fd))
         app.config["fd"] = fd
         app.config["child_pid"] = child_pid
         set_winsize(fd, 50, 50)
