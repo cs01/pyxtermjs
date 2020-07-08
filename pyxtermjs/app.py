@@ -40,6 +40,15 @@ def read_and_forward_pty_output():
 
 @app.route("/")
 def index():
+    print("43: code here")
+    from flask import request
+    hostid = request.args.get('hostid', None)
+    sessionid = request.args.get('sessionid', None)
+    print("45: hostid: {}".format(hostid))
+    print("45: sessionid: {}".format(sessionid))
+    print("47: app.config: {}".format(app.config))
+    app.config['hostid'] = hostid
+    app.config['sessionid'] = sessionid
     return render_template("index.html")
 
 
@@ -63,6 +72,11 @@ def resize(data):
 def connect():
     """new client connected"""
 
+    print("70: code here")
+    #print("71: app.config: {}".format(app.config))
+    print("71: sessionid: {}".format(app.config['sessionid']))
+    print("71: hostid: {}".format(app.config['hostid']))
+
     if app.config["child_pid"]:
         # already started child process, don't start another
         return
@@ -73,7 +87,15 @@ def connect():
         # this is the child process fork.
         # anything printed here will show up in the pty, including the output
         # of this subprocess
-        subprocess.run(app.config["cmd"])
+        cmd = " ".join(shlex.quote(c) for c in app.config["cmd"])
+        print("90: cmd: {}".format(cmd))
+        print("92: app.config['cmd']: {}".format(app.config['cmd']))
+        #cmd = "tlog-play -r es --es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search --es-query='session:3'"
+        #cmd = 'tlog-play -r es --es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search --es-query=session:3'
+        cmd = ['tlog-play', '-r', 'es', '--es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search', '--es-query=session:3']
+        print("93: cmd: {}".format(cmd))
+        #subprocess.run(app.config["cmd"])
+        subprocess.run(cmd)
     else:
         # this is the parent process fork.
         # store child fd and pid
@@ -81,6 +103,9 @@ def connect():
         app.config["child_pid"] = child_pid
         set_winsize(fd, 50, 50)
         cmd = " ".join(shlex.quote(c) for c in app.config["cmd"])
+        print("99: cmd: {}".format(cmd))
+        cmd = "tlog-play -r es --es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search --es-query='session:3'"
+        print("101: cmd: {}".format(cmd))
         print("child pid is", child_pid)
         print(
             f"starting background task with command `{cmd}` to continously read "
@@ -115,7 +140,8 @@ def main():
         exit(0)
     print(f"serving on http://127.0.0.1:{args.port}")
     app.config["cmd"] = [args.command] + shlex.split(args.cmd_args)
-    socketio.run(app, debug=args.debug, port=args.port)
+    #socketio.run(app, debug=args.debug, port=args.port)
+    socketio.run(app, debug=args.debug, host='0.0.0.0', port=args.port)
 
 
 if __name__ == "__main__":

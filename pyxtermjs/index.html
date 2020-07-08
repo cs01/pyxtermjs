@@ -1,7 +1,6 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>pyxterm.js</title>
   <style>
   html {
     font-family: arial;
@@ -11,14 +10,15 @@
 </head>
 <body>
 
-<span style="font-size: 1.4em;">pyxterm.js</span>&nbsp;&nbsp;&nbsp;
-<span style="font-size: small;">status: <span style="font-size: small;" id="status">connecting...</span></span>
-
 <div style="width: 100%; height: calc(100% - 50px);" id="terminal"></div>
+<div style="width: 100%; height: calc(100% - 50px);" id="Controls">
+  <button type="button" onclick="pauseClick()">Pause </button>
+  <button type="button" onclick="fastForwardClick()">Fast forward to end</button>
+  <button type="button" onclick="stopPlayClick()">Stop</button>
+</div>
+<div style="width: 100%; height: calc(100% - 50px);" id="Recordings">
+</div>
 
-<p style="text-align: right; font-size: small;">
-  built by <a href="https://grassfedcode.com">Chad Smith</a> <a href="https://github.com/cs01">GitHub</a>
-</p>
 <!-- xterm -->
 <script src="https://unpkg.com/xterm@3.6.0/dist/xterm.js"></script>
 <script src="https://unpkg.com/xterm@3.6.0/dist/addons/fit/fit.js"></script>
@@ -51,22 +51,26 @@
   });
 
   const socket = io.connect('/pty');
-  const status = document.getElementById("status")
 
   socket.on("pty-output", function(data){
     console.log("new output", data)
     term.write(data.output)
   })
 
-  socket.on("connect", () => {
-    fitToscreen()
-    status.innerHTML = '<span style="background-color: lightgreen;">connected</span>'
-    }
-  )
+  function pauseClick() {
+    console.log("59: Pause key pressed")
+    socket.emit("pty-input", {"input": "p"})
+  }
 
-  socket.on("disconnect", () => {
-    status.innerHTML = '<span style="background-color: #ff8383;">disconnected</span>'
-  })
+  function fastForwardClick() {
+    console.log("64: Fast forward click")
+    socket.emit("pty-input", {"input": "G"})
+  }
+
+  function stopPlayClick() {
+    console.log("69: Stop click")
+    socket.emit("pty-input", {"input": "q"})
+  }
 
   function fitToscreen(){
     term.fit()
