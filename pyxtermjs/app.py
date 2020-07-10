@@ -60,13 +60,64 @@ def index():
     print("43: code here")
     from flask import request
     hostid = request.args.get('host', None)
+    hostid_hash = request.args.get('hostid_hash', None)
     sessionid = request.args.get('sessionid', None)
-    print("45: hostid: {}".format(hostid))
-    print("45: sessionid: {}".format(sessionid))
+    sessionid_hash = request.args.get('sessionid_hash', None)
+    print("45: hostid: {}, type(hostid): {}".format(hostid, type(hostid)))
+    print("45: hostid_hash: {}".format(hostid_hash))
+    print("45: sessionid: {}, type(sessionid): {}".format(sessionid, type(sessionid)))
+    print("45: sessionid_hash: {}".format(sessionid_hash))
+
+    if not hostid_hash:
+        print("72: hostid_hash not sent")
+        return render_template("error.html")
+
+    if not sessionid_hash:
+        print("76: sessionid_hash not sent")
+        return render_template("error.html")
+
+    import hmac
+    import base64
+    hmac_secret_key = 'foxpass_secret_key'
+    foxpass_hmac = hmac.new(hmac_secret_key.encode('utf-8'))
+
+    #hostid = 'junk'
+    foxpass_hmac.update(hostid.encode('utf-8'))
+    hostid_digest = foxpass_hmac.digest()
+    hostid_digest_urlsafe_base64 = base64.urlsafe_b64encode(hostid_digest)
+    hostid_digest_string = hostid_digest_urlsafe_base64.decode('utf-8')
+    print("81: type(hostid_digest_base64): {}".format(type(hostid_digest_urlsafe_base64)))
+    print("82: hostid_digest_base64: {}".format(hostid_digest_urlsafe_base64))
+    print("83: hostid: {}, hostid_digest_string: {}".format(hostid, hostid_digest_string))
+
+    # Compare received hash with computed hash
+    print("87: ----hostid hash - received hash: {}, computed hash: {}".format(hostid_hash, hostid_digest_string))
+    if hostid_hash != hostid_digest_string:
+        print("96: hash mismatch")
+        return render_template("error.html")
+
+    foxpass_hmac = hmac.new(hmac_secret_key.encode('utf-8'))
+
+    foxpass_hmac.update(sessionid.encode('utf-8'))
+    sessionid_digest = foxpass_hmac.digest()
+    sessionid_digest_urlsafe_base64 = base64.urlsafe_b64encode(sessionid_digest)
+    sessionid_digest_string = sessionid_digest_urlsafe_base64.decode('utf-8')
+    print("90: type(sessionid_digest_base64): {}".format(type(sessionid_digest_urlsafe_base64)))
+    print("91: sessionid_digest_base64: {}".format(sessionid_digest_urlsafe_base64))
+    print("92: sessionid: {}, sessionid_digest_string: {}".format(sessionid, sessionid_digest_string))
+
+    # Compare received hash with computed hash
+    print("98: ----sessionid hash - received hash: {}, computed hash: {}".format(sessionid_hash, sessionid_digest_string))
+    if sessionid_hash != sessionid_digest_string:
+        print("112: hash mismatch")
+        return render_template("error.html")
+
     #print("47: app.config: {}".format(app.config))
     app.config['hostid'] = hostid
     app.config['sessionid'] = sessionid
+
     return render_template("index.html")
+    #return render_template("error.html")
 
 
 @socketio.on("pty-input", namespace="/pty")
