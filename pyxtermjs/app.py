@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 import argparse
+from flask import request
+import hmac
+import base64
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 import pty
@@ -28,9 +31,6 @@ def set_winsize(fd, row, col, xpix=0, ypix=0):
 
 def read_and_forward_pty_output():
     max_read_bytes = 1024 * 20
-    #print("31: app.config['fd']: {}".format(app.config['fd']))
-    #import traceback
-    #traceback.printstack()
 
     while True:
         socketio.sleep(0.01)
@@ -40,84 +40,37 @@ def read_and_forward_pty_output():
             if data_ready:
                 output = os.read(app.config["fd"], max_read_bytes).decode()
                 socketio.emit("pty-output", {"output": output}, namespace="/pty")
-                #try:
-                #    output = os.read(app.config["fd"], max_read_bytes).decode()
-                #    socketio.emit("pty-output", {"output": output}, namespace="/pty")
-                #except Exception as e:
-                #    print("40: Exception, e: {}".format(e))
-                #    pass
-
-                #read_bytes = os.read(app.config["fd"], max_read_bytes)
-                #if read_bytes:
-                #   output = read_bytes.decode()
-                #   socketio.emit("pty-output", {"output": output}, namespace="/pty")
-                #else:
-                #    print("42: End-of-file reached")
 
 
 @app.route("/")
 def index():
-    print("43: code here")
-    from flask import request
     hostid = request.args.get('host', None)
-    hostid_hash = request.args.get('hostid_hash', None)
+    if not hostid:
+        return render_template("error.html")
+
     sessionid = request.args.get('sessionid', None)
-    sessionid_hash = request.args.get('sessionid_hash', None)
-    print("45: hostid: {}, type(hostid): {}".format(hostid, type(hostid)))
-    print("45: hostid_hash: {}".format(hostid_hash))
-    print("45: sessionid: {}, type(sessionid): {}".format(sessionid, type(sessionid)))
-    print("45: sessionid_hash: {}".format(sessionid_hash))
-
-    if not hostid_hash:
-        print("72: hostid_hash not sent")
+    if not sessionid:
         return render_template("error.html")
 
-    if not sessionid_hash:
-        print("76: sessionid_hash not sent")
+    request_digest = request.args.get('request_digest', None)
+    if not request_digest:
         return render_template("error.html")
 
-    import hmac
-    import base64
     hmac_secret_key = 'foxpass_secret_key'
     foxpass_hmac = hmac.new(hmac_secret_key.encode('utf-8'))
 
-    #hostid = 'junk'
     foxpass_hmac.update(hostid.encode('utf-8'))
-    hostid_digest = foxpass_hmac.digest()
-    hostid_digest_urlsafe_base64 = base64.urlsafe_b64encode(hostid_digest)
-    hostid_digest_string = hostid_digest_urlsafe_base64.decode('utf-8')
-    print("81: type(hostid_digest_base64): {}".format(type(hostid_digest_urlsafe_base64)))
-    print("82: hostid_digest_base64: {}".format(hostid_digest_urlsafe_base64))
-    print("83: hostid: {}, hostid_digest_string: {}".format(hostid, hostid_digest_string))
-
-    # Compare received hash with computed hash
-    print("87: ----hostid hash - received hash: {}, computed hash: {}".format(hostid_hash, hostid_digest_string))
-    if hostid_hash != hostid_digest_string:
-        print("96: hash mismatch")
-        return render_template("error.html")
-
-    foxpass_hmac = hmac.new(hmac_secret_key.encode('utf-8'))
-
     foxpass_hmac.update(sessionid.encode('utf-8'))
-    sessionid_digest = foxpass_hmac.digest()
-    sessionid_digest_urlsafe_base64 = base64.urlsafe_b64encode(sessionid_digest)
-    sessionid_digest_string = sessionid_digest_urlsafe_base64.decode('utf-8')
-    print("90: type(sessionid_digest_base64): {}".format(type(sessionid_digest_urlsafe_base64)))
-    print("91: sessionid_digest_base64: {}".format(sessionid_digest_urlsafe_base64))
-    print("92: sessionid: {}, sessionid_digest_string: {}".format(sessionid, sessionid_digest_string))
+    request_digest_computed = foxpass_hmac.hexdigest()
 
     # Compare received hash with computed hash
-    print("98: ----sessionid hash - received hash: {}, computed hash: {}".format(sessionid_hash, sessionid_digest_string))
-    if sessionid_hash != sessionid_digest_string:
-        print("112: hash mismatch")
+    if request_digest != request_digest_computed:
         return render_template("error.html")
 
-    #print("47: app.config: {}".format(app.config))
     app.config['hostid'] = hostid
     app.config['sessionid'] = sessionid
 
     return render_template("index.html")
-    #return render_template("error.html")
 
 
 @socketio.on("pty-input", namespace="/pty")
@@ -126,7 +79,6 @@ def pty_input(data):
     terminal.
     """
     if app.config["fd"]:
-        # print("writing to ptd: %s" % data["input"])
         os.write(app.config["fd"], data["input"].encode())
 
 
@@ -138,17 +90,11 @@ def resize(data):
 @socketio.on("disconnect", namespace="/pty")
 def disconnect():
     """new client disconnected"""
-    print("90: client disconnected")
-    print("90: app.config[fd]: {}".format(app.config["fd"]))
+    print("client disconnected")
 
 @socketio.on("connect", namespace="/pty")
 def connect():
     """new client connected"""
-
-    #print("70: code here")
-    #print("71: app.config: {}".format(app.config))
-    #print("71: sessionid: {}".format(app.config['sessionid']))
-    #print("71: hostid: {}".format(app.config['hostid']))
 
     if app.config["child_pid"]:
         # already started child process, don't start another
@@ -161,31 +107,18 @@ def connect():
         # anything printed here will show up in the pty, including the output
         # of this subprocess
         cmd = " ".join(shlex.quote(c) for c in app.config["cmd"])
-        #print("90: cmd: {}".format(cmd))
-        #print("92: app.config['cmd']: {}".format(app.config['cmd']))
-        #print("93: app.config['sessionid']: {}".format(app.config['sessionid']))
-        #print("94: app.config['hostid']: {}".format(app.config['hostid']))
-        #cmd = "tlog-play -r es --es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search --es-query='session:3'"
-        #cmd = 'tlog-play -r es --es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search --es-query=session:3'
         search_string = '--es-query=' + 'host:' + app.config.get('hostid', ' ') + ' AND ' + 'session:' + app.config.get('sessionid', ' ')
-        #print("94: search_string: {}".format(search_string))
       
-        #cmd = ['tlog-play', '-r', 'es', '--es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search', '--es-query=session:3']
         cmd = ['tlog-play', '-r', 'es', '--es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search', search_string]
-        print("93: cmd: {}".format(cmd))
-        #subprocess.run(app.config["cmd"])
         subprocess.run(cmd)
     else:
         # this is the parent process fork.
         # store child fd and pid
-        print("130: fd: {}".format(fd))
         app.config["fd"] = fd
         app.config["child_pid"] = child_pid
         set_winsize(fd, 50, 50)
         cmd = " ".join(shlex.quote(c) for c in app.config["cmd"])
-        print("99: cmd: {}".format(cmd))
         cmd = "tlog-play -r es --es-baseurl=https://search-tlog-test-vthctr52ry4v2upvf2eyglhyfe.us-west-2.es.amazonaws.com/tlog-rsyslog/tlog/_search --es-query='session:3'"
-        print("101: cmd: {}".format(cmd))
         print("child pid is", child_pid)
         print(
             f"starting background task with command `{cmd}` to continously read "
