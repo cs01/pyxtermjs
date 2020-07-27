@@ -99,6 +99,7 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("-p", "--port", default=5000, help="port to run server on")
+    parser.add_argument("-h", "--host", default='127.0.0.1', help="host to run server on (use 0.0.0.0 to allow access from other hosts)")
     parser.add_argument("--debug", action="store_true", help="debug the server")
     parser.add_argument("--version", action="store_true", help="print version and exit")
     parser.add_argument(
@@ -115,7 +116,7 @@ def main():
         exit(0)
     print(f"serving on http://127.0.0.1:{args.port}")
     app.config["cmd"] = [args.command] + shlex.split(args.cmd_args)
-    socketio.run(app, debug=args.debug, port=args.port)
+    socketio.run(app, debug=args.debug, port=args.port, host=args.host)
 
 
 if __name__ == "__main__":
