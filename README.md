@@ -29,19 +29,42 @@ This is a
 
 ## Installation
 
+There are a few ways to install and run.
+
+### Clone & Run Locally
 Clone this repository, enter the `pyxtermjs` directory, then run:
+```
+> python -m venv venv  # must be python3.6+
+> venv/bin/pip install -r requirements.txt
+> venv/bin/python -m pyxtermjs
+serving on http://127.0.0.1:5000
+```
 
+### Install or Run latest version on PyPI
+You can use [pipx](https://github.com/pipxproject/pipx) to try it out.
 ```
-python3 -m venv venv  # must be python3.6+
-venv/bin/pip install -r requirements.txt
-venv/bin/python -m pyxtermjs
+> pipx run pyxtermjs
+serving on http://127.0.0.1:5000
 ```
 
-## Documentation
+You can also and have `pyxtermjs` installed in an isolated environment, yet available on your $PATH with
 ```
->> pyxtermjs --help
-usage: pyxtermjs [-h] [-p PORT] [--debug] [--version] [--command COMMAND]
-                 [--cmd-args CMD_ARGS]
+> pipx install pyxtermjs
+```
+
+### Run from GitHub source
+Use [pipx](https://github.com/pipxproject/pipx) for this as well.
+```
+> pipx run --spec git+https://github.com/cs01/pyxtermjs.git pyxtermjs
+serving on http://127.0.0.1:5000
+```
+
+
+## API
+```
+> pyxtermjs --help
+usage: pyxtermjs [-h] [-p PORT] [--host HOST] [--debug] [--version]
+                 [--command COMMAND] [--cmd-args CMD_ARGS]
 
 A fully functional terminal in your browser.
 https://github.com/cs01/pyxterm.js
@@ -49,6 +72,8 @@ https://github.com/cs01/pyxterm.js
 optional arguments:
   -h, --help            show this help message and exit
   -p PORT, --port PORT  port to run server on (default: 5000)
+  --host HOST           host to run server on (use 0.0.0.0 to allow access
+                        from other hosts) (default: 127.0.0.1)
   --debug               debug the server (default: False)
   --version             print version and exit (default: False)
   --command COMMAND     Command to run in the terminal (default: bash)
