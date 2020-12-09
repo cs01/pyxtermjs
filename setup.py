@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import sys
 
@@ -40,7 +39,7 @@ setup(
     description="interactive terminal in the browser",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/cs01/pyxterm.js",
+    url="https://github.com/cs01/pyxtermjs",
     license="License :: OSI Approved :: MIT License",
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
     include_package_data=True,
