@@ -8,7 +8,7 @@ click==7.0                # via flask
 flask-socketio==3.3.1
 flask==1.0.2              # via flask-socketio
 itsdangerous==1.1.0       # via flask
-jinja2==2.10              # via flask
+jinja2==2.11.3              # via flask
 markupsafe==1.1.1         # via jinja2
 python-engineio==3.4.3    # via python-socketio
 python-socketio==3.1.2    # via flask-socketio
