@@ -50,7 +50,7 @@ def pty_input(data):
     """
     if app.config["fd"]:
         # print("writing to ptd: %s" % data["input"])
-        os.write(app.config["fd"], data["input"].encode())
+        os.write(app.config["fd"], data["input"]["key"].encode())
 
 
 @socketio.on("resize", namespace="/pty")

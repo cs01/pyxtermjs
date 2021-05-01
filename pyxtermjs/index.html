@@ -7,7 +7,7 @@
     font-family: arial;
   }
   </style>
-  <link rel="stylesheet" href="https://unpkg.com/xterm@3.6.0/dist/xterm.css" />
+  <link rel="stylesheet" href="https://unpkg.com/xterm@4.11.0/css/xterm.css" />
 </head>
 <body>
 
@@ -20,31 +20,32 @@
   built by <a href="https://grassfedcode.com">Chad Smith</a> <a href="https://github.com/cs01">GitHub</a>
 </p>
 <!-- xterm -->
-<script src="https://unpkg.com/xterm@3.6.0/dist/xterm.js"></script>
-<script src="https://unpkg.com/xterm@3.6.0/dist/addons/fit/fit.js"></script>
-<script src="https://unpkg.com/xterm@3.6.0/dist/addons/webLinks/webLinks.js"></script>
-<script src="https://unpkg.com/xterm@3.6.0/dist/addons/fullscreen/fullscreen.js"></script>
-<script src="https://unpkg.com/xterm@3.6.0/dist/addons/search/search.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+<script src="https://unpkg.com/xterm@4.11.0/lib/xterm.js"></script>
+<script src="https://unpkg.com/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.js"></script>
+<script src="https://unpkg.com/xterm-addon-web-links@0.4.0/lib/xterm-addon-web-links.js"></script>
+<script src="https://unpkg.com/xterm-addon-search@0.8.0/lib/xterm-addon-sear
+ch.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
 
 <script>
-  Terminal.applyAddon(fullscreen)
-  Terminal.applyAddon(fit)
-  Terminal.applyAddon(webLinks)
-  Terminal.applyAddon(search)
   const term = new Terminal({
         cursorBlink: true,
         macOptionIsMeta: true,
         scrollback: true,
     });
+  // https://github.com/xtermjs/xterm.js/issues/2941
+  const fit = new FitAddon.FitAddon();
+  term.loadAddon(fit);
+  term.loadAddon(new WebLinksAddon.WebLinksAddon());
+  term.loadAddon(new SearchAddon.SearchAddon());
+
   term.open(document.getElementById('terminal'));
-  term.fit()
+  fit.fit()
   term.resize(15, 50)
   console.log(`size: ${term.cols} columns, ${term.rows} rows`)
-  // term.toggleFullScreen(true)
-  term.fit()
+  fit.fit()
   term.write("Welcome to pyxterm.js!\nhttps://github.com/cs01/pyxterm.js\n")
-  term.on('key', (key, ev) => {
+  term.onKey((key, ev) => {
     console.log("pressed key", key)
     console.log("event", ev)
     socket.emit("pty-input", {"input": key})
@@ -69,7 +70,7 @@
   })
 
   function fitToscreen(){
-    term.fit()
+    fit.fit()
     socket.emit("resize", {"cols": term.cols, "rows": term.rows})
   }
 
