@@ -12,6 +12,7 @@ from pathlib import Path  # noqa E402
 from typing import List  # noqa E402
 import ast  # noqa E402
 import re  # noqa E402
+import distutils.text_file
 
 CURDIR = Path(__file__).parent
 
@@ -35,7 +36,7 @@ setup(
     name="pyxtermjs",
     version=get_version(),
     author="Chad Smith",
-    author_email="grassfedcode@gmail.com",
+    author_email="chadsmith.software@gmail.com",
     description="interactive terminal in the browser",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -59,7 +60,9 @@ setup(
     extras_require={},
     zip_safe=False,
     python_requires=">=3.6",
-    install_requires=["flask-socketio>=5.0, <6.0"],
+    install_requires=distutils.text_file.TextFile(
+        filename="./requirements.txt"
+    ).readlines(),
     classifiers=[
         "Operating System :: OS Independent",
         "License :: OSI Approved :: MIT License",
