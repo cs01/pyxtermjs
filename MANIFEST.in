@@ -1,2 +1,2 @@
-include README.md LICENSE
+include README.md LICENSE requirements.txt
 recursive-include pyxtermjs *

@@ -7,6 +7,12 @@ import nox  # type: ignore
 nox.options.reuse_existing_virtualenvs = True
 
 
+@nox.session()
+def run(session):
+    session.install(".")
+    session.run("python", "-m", "pyxtermjs", *session.posargs)
+
+
 def has_changes():
     status = (
         subprocess.run(

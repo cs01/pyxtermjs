@@ -10,9 +10,12 @@ import termios
 import struct
 import fcntl
 import shlex
+import logging
+import sys
 
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
-__version__ = "0.4.0.2"
+__version__ = "0.5.0.0"
 
 app = Flask(__name__, template_folder=".", static_folder=".", static_url_path="")
 app.config["SECRET_KEY"] = "secret!"
@@ -22,6 +25,7 @@ socketio = SocketIO(app)
 
 
 def set_winsize(fd, row, col, xpix=0, ypix=0):
+    logging.debug("setting window size with termios")
     winsize = struct.pack("HHHH", row, col, xpix, ypix)
     fcntl.ioctl(fd, termios.TIOCSWINSZ, winsize)
 
@@ -49,20 +53,21 @@ def pty_input(data):
     terminal.
     """
     if app.config["fd"]:
-        # print("writing to ptd: %s" % data["input"])
-        os.write(app.config["fd"], data["input"]["key"].encode())
+        logging.debug("received input from browser: %s" % data["input"])
+        os.write(app.config["fd"], data["input"].encode())
 
 
 @socketio.on("resize", namespace="/pty")
 def resize(data):
     if app.config["fd"]:
+        logging.debug(f"Resizing window to {data['rows']}x{data['cols']}")
         set_winsize(app.config["fd"], data["rows"], data["cols"])
 
 
 @socketio.on("connect", namespace="/pty")
 def connect():
     """new client connected"""
-
+    logging.info("new client connected")
     if app.config["child_pid"]:
         # already started child process, don't start another
         return
@@ -81,13 +86,16 @@ def connect():
         app.config["child_pid"] = child_pid
         set_winsize(fd, 50, 50)
         cmd = " ".join(shlex.quote(c) for c in app.config["cmd"])
-        print("child pid is", child_pid)
-        print(
+        # logging/print statements must go after this because... I have no idea why
+        # but if they come before the background task never starts
+        socketio.start_background_task(target=read_and_forward_pty_output)
+
+        logging.info("child pid is " + child_pid)
+        logging.info(
             f"starting background task with command `{cmd}` to continously read "
             "and forward pty output to client"
         )
-        socketio.start_background_task(target=read_and_forward_pty_output)
-        print("task started")
+        logging.info("task started")
 
 
 def main():
@@ -118,8 +126,16 @@ def main():
     if args.version:
         print(__version__)
         exit(0)
-    print(f"serving on http://127.0.0.1:{args.port}")
     app.config["cmd"] = [args.command] + shlex.split(args.cmd_args)
+    green = "\033[92m"
+    end = "\033[0m"
+    log_format = green + "pyxtermjs > " + end + "%(levelname)s (%(funcName)s:%(lineno)s) %(message)s"
+    logging.basicConfig(
+        format=log_format,
+        stream=sys.stdout,
+        level=logging.DEBUG if args.debug else logging.INFO,
+    )
+    logging.info(f"serving on http://127.0.0.1:{args.port}")
     socketio.run(app, debug=args.debug, port=args.port, host=args.host)
 
 

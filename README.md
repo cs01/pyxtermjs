@@ -32,33 +32,35 @@ This is a
 There are a few ways to install and run.
 
 ### Clone & Run Locally
-Clone this repository, enter the `pyxtermjs` directory, then run:
+Clone this repository, enter the `pyxtermjs` directory.
+
+If you have [nox](https://github.com/theacodes/nox) you can run the following.
 ```
-> python -m venv venv  # must be python3.6+
-> venv/bin/pip install -r requirements.txt
-> venv/bin/python -m pyxtermjs
-serving on http://127.0.0.1:5000
+> nox -s run
+```
+Nox takes care of setting up a virtual environment and running the right command for you. You can pass arguments to the server like this
+```
+> nox -s run -- --debug
 ```
 
-### Install or Run latest version on PyPI
-You can use [pipx](https://github.com/pipxproject/pipx) to try it out.
+If you don't have nox, you can run the following from inside a virtual environment.
 ```
-> pipx run pyxtermjs
-serving on http://127.0.0.1:5000
+> pip install -r requirements.txt
+> python -m pyxtermjs
+> python -m pyxtermjs --debug
 ```
 
-You can also and have `pyxtermjs` installed in an isolated environment, yet available on your $PATH with
+### Install
+You can install with [pipx](https://github.com/pipxproject/pipx) (recommended) or pip.
 ```
 > pipx install pyxtermjs
+> pyxtermjs
 ```
 
-### Run from GitHub source
-Use [pipx](https://github.com/pipxproject/pipx) for this as well.
+Or you can try run latest version on PyPI
 ```
-> pipx run --spec git+https://github.com/cs01/pyxtermjs.git pyxtermjs
-serving on http://127.0.0.1:5000
+> pipx run pyxtermjs
 ```
-
 
 ## API
 ```
