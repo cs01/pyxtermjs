@@ -53,7 +53,7 @@ ch.js"></script>
       term.writeln("Welcome to pyxterm.js!");
       term.writeln("https://github.com/cs01/pyxterm.js");
       term.onData((data) => {
-        console.log("new input data", data);
+        console.log("key pressed in browser:", data);
         socket.emit("pty-input", { input: data });
       });
 
@@ -61,7 +61,7 @@ ch.js"></script>
       const status = document.getElementById("status");
 
       socket.on("pty-output", function (data) {
-        console.log("new output received from server", data);
+        console.log("new output received from server:", data.output);
         term.write(data.output);
       });
 

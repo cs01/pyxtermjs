@@ -38,12 +38,16 @@ If you have [nox](https://github.com/theacodes/nox) you can run the following.
 ```
 > nox -s run
 ```
-Nox takes care of setting up a virtual environment and running the right command for you.
+Nox takes care of setting up a virtual environment and running the right command for you. You can pass arguments to the server like this
+```
+> nox -s run -- --debug
+```
 
 If you don't have nox, you can run the following from inside a virtual environment.
 ```
 > pip install -r requirements.txt
 > python -m pyxtermjs
+> python -m pyxtermjs --debug
 ```
 
 ### Install
