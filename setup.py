@@ -59,7 +59,7 @@ setup(
     extras_require={},
     zip_safe=False,
     python_requires=">=3.6",
-    install_requires=["flask-socketio>=3.0, <=4.0"],
+    install_requires=["flask-socketio>=5.0, <6.0"],
     classifiers=[
         "Operating System :: OS Independent",
         "License :: OSI Approved :: MIT License",
