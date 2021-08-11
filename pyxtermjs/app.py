@@ -86,12 +86,15 @@ def connect():
         app.config["child_pid"] = child_pid
         set_winsize(fd, 50, 50)
         cmd = " ".join(shlex.quote(c) for c in app.config["cmd"])
+        # logging/print statements must go after this because... I have no idea why
+        # but if they come before the background task never starts
+        socketio.start_background_task(target=read_and_forward_pty_output)
+
         logging.info("child pid is " + child_pid)
         logging.info(
             f"starting background task with command `{cmd}` to continously read "
             "and forward pty output to client"
         )
-        socketio.start_background_task(target=read_and_forward_pty_output)
         logging.info("task started")
 
 
