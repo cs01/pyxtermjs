@@ -135,7 +135,7 @@ def main():
         stream=sys.stdout,
         level=logging.DEBUG if args.debug else logging.INFO,
     )
-    logging.info(f"serving on http://127.0.0.1:{args.port}")
+    logging.info(f"serving on http://{args.host}:{args.port}")
     socketio.run(app, debug=args.debug, port=args.port, host=args.host)
 
 
