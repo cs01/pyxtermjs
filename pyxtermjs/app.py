@@ -15,7 +15,7 @@ import sys
 
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
-__version__ = "0.5.0.1"
+__version__ = "0.5.0.2"
 
 app = Flask(__name__, template_folder=".", static_folder=".", static_url_path="")
 app.config["SECRET_KEY"] = "secret!"
