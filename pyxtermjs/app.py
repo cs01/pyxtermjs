@@ -13,9 +13,9 @@ import shlex
 import logging
 import sys
 
-logging.getLogger("werkzeug").setLevel(logging.ERROR)
+from __about__ import __version__
 
-__version__ = "0.5.0.2"
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
 app = Flask(__name__, template_folder=".", static_folder=".", static_url_path="")
 app.config["SECRET_KEY"] = "secret!"
