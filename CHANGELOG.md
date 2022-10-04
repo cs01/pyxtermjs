@@ -1,3 +1,7 @@
+## 0.5.0.2
+
+- support copy and paste in terminal (#27)
+
 ## 0.5.0.1
 
 - Do not fail on unicode decode errors

@@ -13,7 +13,9 @@
     />
   </head>
   <body>
-    <span style="font-size: 1.4em">pyxterm.js</span>&nbsp;&nbsp;&nbsp;
+      <a href="https://github.com/cs01/pyxtermjs" target="_blank" style="font-size: 1.4em; text-decoration: none; color:black">pyxterm.js</a
+      >&nbsp;&nbsp;&nbsp;
+    </a>
     <span style="font-size: small"
       >status:
       <span style="font-size: small" id="status">connecting...</span></span
@@ -39,6 +41,7 @@ ch.js"></script>
         macOptionIsMeta: true,
         scrollback: true,
       });
+      term.attachCustomKeyEventHandler(customKeyEventHandler);
       // https://github.com/xtermjs/xterm.js/issues/2941
       const fit = new FitAddon.FitAddon();
       term.loadAddon(fit);
@@ -52,8 +55,12 @@ ch.js"></script>
       fit.fit();
       term.writeln("Welcome to pyxterm.js!");
       term.writeln("https://github.com/cs01/pyxterm.js");
+      term.writeln('')
+      term.writeln("You can copy with ctrl+shift+x");
+      term.writeln("You can paste with ctrl+shift+v");
+      term.writeln('')
       term.onData((data) => {
-        console.log("key pressed in browser:", data);
+        console.log("browser terminal received new data:", data);
         socket.emit("pty-input", { input: data });
       });
 
@@ -90,6 +97,38 @@ ch.js"></script>
           clearTimeout(timeout);
           timeout = setTimeout(() => func.apply(context, args), wait_ms);
         };
+      }
+
+      /**
+       * Handle copy and paste events
+       */
+      function customKeyEventHandler(e) {
+        if (e.type !== "keydown") {
+          return true;
+        }
+        if (e.ctrlKey && e.shiftKey) {
+          const key = e.key.toLowerCase();
+          if (key === "v") {
+            // ctrl+shift+v: paste whatever is in the clipboard
+            navigator.clipboard.readText().then((toPaste) => {
+              term.writeText(toPaste);
+            });
+            return false;
+          } else if (key === "c" || key === "x") {
+            // ctrl+shift+x: copy whatever is highlighted to clipboard
+
+            // 'x' is used as an alternate to 'c' because ctrl+c is taken
+            // by the terminal (SIGINT) and ctrl+shift+c is taken by the browser
+            // (open devtools).
+            // I'm not aware of ctrl+shift+x being used by anything in the terminal
+            // or browser
+            const toCopy = term.getSelection();
+            navigator.clipboard.writeText(toCopy);
+            term.focus();
+            return false;
+          }
+        }
+        return true;
       }
 
       const wait_ms = 50;
