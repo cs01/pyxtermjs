@@ -15,7 +15,7 @@ import sys
 
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
-__version__ = "0.5.0.0"
+__version__ = "0.5.0.1"
 
 app = Flask(__name__, template_folder=".", static_folder=".", static_url_path="")
 app.config["SECRET_KEY"] = "secret!"
@@ -38,7 +38,9 @@ def read_and_forward_pty_output():
             timeout_sec = 0
             (data_ready, _, _) = select.select([app.config["fd"]], [], [], timeout_sec)
             if data_ready:
-                output = os.read(app.config["fd"], max_read_bytes).decode(errors='ignore')
+                output = os.read(app.config["fd"], max_read_bytes).decode(
+                    errors="ignore"
+                )
                 socketio.emit("pty-output", {"output": output}, namespace="/pty")
 
 
@@ -129,7 +131,12 @@ def main():
     app.config["cmd"] = [args.command] + shlex.split(args.cmd_args)
     green = "\033[92m"
     end = "\033[0m"
-    log_format = green + "pyxtermjs > " + end + "%(levelname)s (%(funcName)s:%(lineno)s) %(message)s"
+    log_format = (
+        green
+        + "pyxtermjs > "
+        + end
+        + "%(levelname)s (%(funcName)s:%(lineno)s) %(message)s"
+    )
     logging.basicConfig(
         format=log_format,
         stream=sys.stdout,
