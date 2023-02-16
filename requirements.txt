@@ -16,11 +16,13 @@ itsdangerous==2.0.1
     # via flask
 jinja2==3.0.1
     # via flask
-markupsafe==2.0.1
-    # via jinja2
+markupsafe==2.1.2
+    # via
+    #   jinja2
+    #   werkzeug
 python-engineio==4.2.1
     # via python-socketio
 python-socketio==5.4.0
     # via flask-socketio
-werkzeug==2.0.1
+werkzeug==2.2.3
     # via flask
